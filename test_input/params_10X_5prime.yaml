@@ -1,0 +1,58 @@
+## Input options
+input                               : "samplesheet.csv"
+platform                            : "10X"
+outdir                              : "./results"
+
+## References
+genome                              : null
+genome_fasta                        : "genome.fa"
+transcript_fasta                    : null
+gtf                                 : "genes.gtf.gz"
+igenomes_base                       : 's3://ngi-igenomes/igenomes/'
+igenomes_ignore                     : true
+fasta_delimiter                     : ""
+
+## Fastq Options
+split_amount                        : 12000000
+
+## Read Trimming Options
+min_length                          : 0
+min_q_score                         : 0
+skip_trimming                       : true
+
+## 10X cell barcode options
+whitelist                           : null
+barcode_format                      : "10X_5v3"
+
+## Deduplication
+dedup_tool                          : "umitools"
+
+## Parse related options
+parse_generate_pe                   : "--chemistry v3 --l1dist 3 --l2dist 2"
+parse_spipe                         : "--chemistry v3 --kit WT_mini"
+
+## Argentag related options
+argentag_taggy_demux                : "--out-fmt='flames' --trim-TSO --preserve --trim-poly 'normal' --orient 'sense' --keep-failed"
+
+## Library strandness option
+stranded                            : null
+
+## Mapping
+skip_save_minimap2_index            : false
+kmer_size                           : 14
+
+## Analysis options
+retain_introns                      : true
+quantifier                          : "isoquant"
+
+## Skipping options:
+skip_qc                             : false
+skip_seurat                         : false
+skip_nanoplot                       : true
+skip_toulligqc                      : true
+skip_fastqc                         : false
+skip_bam_nanocomp                   : true
+
+##MultiQC options:
+# multiqc_config                    : "multiqc_config.yml"
+# multiqc_logo                      : "logo.png"
