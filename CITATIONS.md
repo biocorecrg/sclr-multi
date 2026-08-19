@@ -66,6 +66,26 @@
 
 - [Picard](https://broadinstitute.github.io/picard/)
 
+- [RSeQC](https://pubmed.ncbi.nlm.nih.gov/22743226/)
+
+  > Wang L, Wang S, Li W. RSeQC: quality control of RNA-seq experiments. Bioinformatics. 2012 Aug 15;28(16):2184-5. doi: 10.1093/bioinformatics/bts356. Epub 2012 Jun 27. PMID: 22743226; PMCID: PMC3413159.
+
+- [split](https://linux.die.net/man/1/split)
+
+  > Linux core utility for splitting files
+
+- [taggy_demux](https://github.com/shimlab/taggy_demux)
+
+  > Demultiplexing tool for Argentag single-cell RNA-seq platform
+
+- [parse_pe_ont](https://github.com/long-read-tools/parse_pt)
+
+  > Tool for generating paired-end reads from long-read Nanopore data for the Parse platform
+
+- [split-pipe](https://github.com/alexdobin/splitpipe)
+
+  > Demultiplexing and preprocessing tool for Parse single-cell RNA-seq platform
+
 - [UCSC tools](https://pubmed.ncbi.nlm.nih.gov/20639541/)
 
   > Kent WJ, Zweig AS, Barber G, Hinrichs AS, Karolchik D. BigWig and BigBed: enabling browsing of large distributed datasets. Bioinformatics. 2010 Sep 1;26(17):2204-7. doi: 10.1093/bioinformatics/btq351. Epub 2010 Jul 17. PubMed PMID: 20639541; PubMed Central PMCID: PMC2922891.

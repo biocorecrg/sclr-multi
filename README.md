@@ -19,7 +19,9 @@
 
 ## Introduction
 
-**nf-core/scnanoseq** is a bioinformatics best-practice analysis pipeline for 10X Genomics single-cell/nuclei RNA-seq data derived from Oxford Nanopore Q20+ chemistry ([R10.4 flow cells (>Q20)](https://nanoporetech.com/about-us/news/oxford-nanopore-announces-technology-updates-nanopore-community-meeting)). Due to the expectation of >Q20 quality, the input data for the pipeline does not depend on Illumina paired data. **Please note `scnanoseq` can also process Oxford data with older chemistry, but we encourage usage of the Q20+ chemistry when possible**.
+> **Note**: This is a fork of the [nf-core/scnanoseq](https://github.com/nf-core/scnanoseq) pipeline developed at the Centre for Genomic Regulation (CRG) to add support for Argentag and Parse single-cell platforms. For the original 10X-only version, please refer to the main nf-core repository.
+
+**scnanoseq** is a bioinformatics best-practice analysis pipeline for single-cell/nuclei RNA-seq data derived from Oxford Nanopore Q20+ chemistry ([R10.4 flow cells (>Q20)](https://nanoporetech.com/about-us/news/oxford-nanopore-announces-technology-updates-nanopore-community-meeting)). This fork extends the pipeline to support data from multiple single-cell platforms including 10X Genomics (3' and 5' protocols), Argentag, and Parse. Due to the expectation of >Q20 quality, the input data for the pipeline does not depend on Illumina paired data. **Please note `scnanoseq` can also process Oxford data with older chemistry, but we encourage usage of the Q20+ chemistry when possible**.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
 
@@ -34,25 +36,33 @@ On release, automated continuous integration tests run the pipeline on a full-si
    1. Optional: Split FASTQ for faster processing ([`split`](https://linux.die.net/man/1/split))
 3. Trim and filter reads ([`Nanofilt`](https://github.com/wdecoster/nanofilt))
 4. Post trim QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
-5. Barcode detection using a custom whitelist or 10X whitelist. ([`BLAZE`](https://github.com/shimlab/BLAZE))
-6. Extract barcodes. Consists of the following steps:
-   1. Parse FASTQ files into R1 reads containing barcode and UMI and R2 reads containing sequencing without barcode and UMI (custom script `./bin/pre_extract_barcodes.py`)
-   2. Re-zip FASTQs ([`pigz`](https://github.com/madler/pigz))
-7. Barcode correction (custom script `./bin/correct_barcodes.py`)
-8. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
-9. Alignment to the genome, transcriptome, or both ([`minimap2`](https://github.com/lh3/minimap2))
-10. Post-alignment filtering of mapped reads and gathering mapping QC ([`SAMtools`](http://www.htslib.org/doc/samtools.html))
-11. Post-alignment QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp), [`RSeQC`](https://rseqc.sourceforge.net/))
-12. Barcode (BC) tagging with read quality, BC quality, UMI quality (custom script `./bin/tag_barcodes.py`)
-13. Read deduplication ([`UMI-tools`](https://github.com/CGATOxford/UMI-tools) OR [`Picard MarkDuplicates`](https://broadinstitute.github.io/picard/))
-14. Gene and transcript level matrices generation with [`IsoQuant`](https://github.com/ablab/IsoQuant) and/or transcript level matrices with [`oarfish`](https://github.com/COMBINE-lab/oarfish)
-15. Preliminary matrix QC ([`Seurat`](https://github.com/satijalab/seurat))
-16. Compile QC for raw reads, trimmed reads, pre and post-extracted reads, mapping metrics and preliminary single-cell/nuclei QC ([`MultiQC`](http://multiqc.info/))
+5. Platform-specific demultiplexing and barcode extraction:
+   1. **10X Genomics**: 
+      - Barcode detection using 10X whitelist ([`BLAZE`](https://github.com/shimlab/BLAZE))
+      - Extract barcodes: Parse FASTQ files into R1 reads containing barcode and UMI and R2 reads containing sequencing without barcode and UMI (custom script `./bin/pre_extract_barcodes.py`)
+      - Barcode correction (custom script `./bin/correct_barcodes.py`)
+   2. **Argentag**:
+      - Chimera splitting (custom script)
+      - Demultiplexing using taggy_demux (v1.1)
+   3. **Parse**:
+      - Generate artificial paired-end reads using parse_pe_ont (v4.0)
+      - Demultiplexing using split-pipe (v1.6.1)
+6. Post-extraction QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
+7. Alignment to the genome, transcriptome, or both ([`minimap2`](https://github.com/lh3/minimap2))
+8. Post-alignment filtering of mapped reads and gathering mapping QC ([`SAMtools`](http://www.htslib.org/doc/samtools.html))
+9. Post-alignment QC in unfiltered BAM files ([`NanoComp`](https://github.com/wdecoster/nanocomp), [`RSeQC`](https://rseqc.sourceforge.net/))
+10. Barcode (BC) tagging with read quality, BC quality, UMI quality (custom script `./bin/tag_barcodes.py`)
+11. Read deduplication ([`UMI-tools`](https://github.com/CGATOxford/UMI-tools) OR [`Picard MarkDuplicates`](https://broadinstitute.github.io/picard/))
+12. Gene and transcript level matrices generation with [`IsoQuant`](https://github.com/ablab/IsoQuant) and/or transcript level matrices with [`oarfish`](https://github.com/COMBINE-lab/oarfish)
+13. Preliminary matrix QC ([`Seurat`](https://github.com/satijalab/seurat))
+14. Compile QC for raw reads, trimmed reads, pre and post-extracted reads, mapping metrics and preliminary single-cell/nuclei QC ([`MultiQC`](http://multiqc.info/))
 
 ## Usage
 
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
+
+### Prepare your samplesheet
 
 First, prepare a samplesheet with your input data that looks as follows:
 
@@ -69,27 +79,72 @@ CONTROL_REP4,AEG588A4_S3.fastq.gz,5000
 
 Each row represents a single-end fastq file. Rows with the same sample identifier are considered technical replicates and will be automatically merged. `cell_count` refers to the expected number of cells you expect.
 
+### Run the pipeline with platform-specific parameters
+
+The pipeline supports three single-cell sequencing platforms. Use the appropriate parameter file for your platform:
+
+#### 10X Genomics 3' Protocol
+
+Key parameters:
+- `platform`: "10X"
+- `barcode_format`: "10X_3v4" (alternatives: "10X_3v3")
+
 ```bash
 nextflow run nf-core/scnanoseq \
    -profile <docker/singularity/.../institute> \
-   --input samplesheet.csv \
-   --outdir <OUTDIR>
+   -params-file test_input/params_10X_3prime.yaml
+```
+
+#### 10X Genomics 5' Protocol
+
+Key parameters:
+- `platform`: "10X"
+- `barcode_format`: "10X_5v3" (alternatives: "10X_5v2")
+
+```bash
+nextflow run nf-core/scnanoseq \
+   -profile <docker/singularity/.../institute> \
+   -params-file test_input/params_10X_5prime.yaml
+```
+
+#### Argentag Platform
+
+Key parameters:
+- `platform`: "Argentag"
+- `argentag_taggy_demux`: taggy_demux command options (e.g., "--out-fmt='flames' --trim-TSO --preserve --trim-poly 'normal' --orient 'sense' --keep-failed")
+
+```bash
+nextflow run nf-core/scnanoseq \
+   -profile <docker/singularity/.../institute> \
+   -params-file test_input/params_argentag.yaml
+```
+
+#### Parse Platform
+
+Key parameters:
+- `platform`: "Parse"
+- `parse_generate_pe`: parse_pe_ont command options (e.g., "--chemistry v3 --l1dist 3 --l2dist 2")
+- `parse_spipe`: split-pipe command options (e.g., "--chemistry v3 --kit WT_mini")
+
+```bash
+nextflow run nf-core/scnanoseq \
+   -profile <docker/singularity/.../institute> \
+   -params-file test_input/params_parse.yaml
 ```
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
 
-For more details and further functionality, please refer to the [usage documentation](https://nf-co.re/scnanoseq/usage) and the [parameter documentation](https://nf-co.re/scnanoseq/parameters).
+For more details and further functionality, please refer to the parameter files in the `test_input` directory and the [original nf-core scnanoseq documentation](https://nf-co.re/scnanoseq).
 
 ## Pipeline output
 
-This pipeline produces feature-barcode matrices as the main output. These feature-barcode matrices are able to be ingested directly by most packages used for downstream analyses such as `Seurat`. Additionally, the pipeline produces a number of quality control metrics to ensure that the samples processed meet expected metrics for single-cell/nuclei data.
+This pipeline produces feature-barcode matrices as the main output, regardless of the sequencing platform used (10X, Argentag, or Parse). These feature-barcode matrices are able to be ingested directly by most packages used for downstream analyses such as `Seurat`. Additionally, the pipeline produces a number of quality control metrics to ensure that the samples processed meet expected metrics for single-cell/nuclei data.
 
 The pipeline provides two tools to produce the aforementioned feature-barcode matrices, `IsoQuant` and `oarfish`, and the user is given the ability to choose whether to run both or just one. `IsoQuant` will require a genome fasta to be used as input to the pipeline, and will produce both gene and transcript level matrices. `oarfish` will require a transcriptome fasta to be used as input to the pipeline and will produce only transcript level matrices.
 
 To see the results of an example test run with a full size dataset refer to the [results](https://nf-co.re/scnanoseq/results) tab on the nf-core website pipeline page.
-For more details about the full set of output files and reports, please refer to the
-[output documentation](https://nf-co.re/scnanoseq/output).
+For more details about the full set of output files and reports, please refer to the [original nf-core scnanoseq output documentation](https://nf-co.re/scnanoseq/output).
 
 ## Troubleshooting
 
@@ -172,9 +227,17 @@ process
 }
 ```
 
+### Platform-specific considerations
+
+- **Argentag**: The `ARGENTAG_TAGGY_DEMUX` process can be memory-intensive for large datasets. If you experience memory errors, consider increasing the memory allocation for this process in a custom config file.
+- **Parse**: The `SPLITPIPE_PRE` process requires significant computational resources. Ensure that adequate CPU and memory are allocated. The `split_amount` parameter can help improve performance by parallelizing the processing across multiple chunks.
+- **10X**: For 10X data, the `BLAZE` barcode detection step can benefit from increased CPU allocation. The `CORRECT_BARCODES` process may also require additional resources for very large datasets.
+
 ## Credits
 
 nf-core/scnanoseq was originally written by [Austyn Trull](https://github.com/atrull314), and [Dr. Lara Ianov](https://github.com/lianov).
+
+This fork of the scnanoseq pipeline was developed by **Anna Delgado** from the Bioinformatics Unit at the Centre for Genomic Regulation (CRG) to extend support for additional single-cell sequencing platforms (Argentag and Parse).
 
 We would also like to thank the following people and groups for their support, including financial support:
 
@@ -182,12 +245,6 @@ We would also like to thank the following people and groups for their support, i
 - University of Alabama at Birmingham Biological Data Science Core (U-BDS), RRID:SCR_021766, <https://github.com/U-BDS>
 - Civitan International Research Center
 - Support from: 3P30CA013148-48S8
-
-## Contributions and Support
-
-If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
-
-For further information or help, don't hesitate to get in touch on the [Slack `#scnanoseq` channel](https://nfcore.slack.com/channels/scnanoseq) (you can join with [this invite](https://nf-co.re/join/slack)).
 
 ## Citations
 
