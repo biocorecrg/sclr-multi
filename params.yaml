@@ -1,6 +1,7 @@
 ## Input options
 input                               : null
-platform                            : null
+platform                            : null  # Options: "10X", "Argentag", "Parse"
+outdir                              : null
 
 ## References
 genome                              : null
@@ -19,14 +20,16 @@ min_length                          : 1
 min_q_score                         : 10
 skip_trimming                       : false
 
-## Cell barcode options
+## 10X cell barcode options
 whitelist                           : null
-barcode_format                      : null
-dedup_tool                          : 'umitools'
+barcode_format                      : null  # Options: "10X_3v3", "10X_3v4", "10X_5v2", "10X_5v3"
 
 ## Parse related options
 parse_generate_pe                   : "--chemistry v3 --l1dist 3 --l2dist 2"
 parse_spipe                         : "--chemistry v3 --kit WT_mini"
+
+## Argentag related options
+argentag_taggy_demux                : "--out-fmt='flames' --trim-TSO --preserve --trim-poly 'normal' --orient 'sense' --keep-failed"
 
 ## Library strandness option
 stranded                            : null
@@ -35,6 +38,21 @@ stranded                            : null
 skip_save_minimap2_index            : false
 kmer_size                           : 14
 
+## Deduplication
+dedup_tool                          : 'umitools'  # Options: "umitools", "picard"
+
 ## Analysis options
 retain_introns                      : true
 quantifier                          : ''
+
+## Skipping options:
+skip_qc                             : false
+skip_seurat                         : false
+skip_nanoplot                       : false
+skip_toulligqc                      : false
+skip_fastqc                         : false
+skip_bam_nanocomp                   : false
+
+## MultiQC options:
+multiqc_config                      : null
+multiqc_logo                        : null
