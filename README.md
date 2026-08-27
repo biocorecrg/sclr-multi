@@ -23,6 +23,23 @@
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
 
+## Installation
+
+**scnanoseq** is a Nextflow pipeline that uses containerization for all dependencies, making installation straightforward:
+
+1. Install [Nextflow](https://www.nextflow.io/docs/latest/getstarted.html) (requires Java 11 or later)
+2. Clone this repository:
+   ```bash
+   git clone https://github.com/biocorecrg/scnanoseq.git
+   cd scnanoseq
+   ```
+3. Run the pipeline with your preferred container engine (Docker or Singularity):
+   ```bash
+   nextflow run main.nf -profile docker -params-file params.yaml
+   ```
+
+That's it! Nextflow will automatically handle downloading and running all required software in containers.
+
 ## Pipeline summary
 
 ![scnanoseq diagram](docs/images/metro-map-combined.svg)
@@ -86,7 +103,7 @@ Key parameters:
 - `barcode_format`: "10X_3v4" (alternatives: "10X_3v3")
 
 ```bash
-nextflow run nf-core/scnanoseq \
+nextflow run main.nf \
    -profile <docker/singularity/.../institute> \
    -params-file test_input/params_10X_3prime.yaml
 ```
@@ -98,7 +115,7 @@ Key parameters:
 - `barcode_format`: "10X_5v3" (alternatives: "10X_5v2")
 
 ```bash
-nextflow run nf-core/scnanoseq \
+nextflow run main.nf \
    -profile <docker/singularity/.../institute> \
    -params-file test_input/params_10X_5prime.yaml
 ```
@@ -110,7 +127,7 @@ Key parameters:
 - `argentag_taggy_demux`: taggy_demux command options (e.g., "--out-fmt='flames' --trim-TSO --preserve --trim-poly 'normal' --orient 'sense' --keep-failed")
 
 ```bash
-nextflow run nf-core/scnanoseq \
+nextflow run main.nf \
    -profile <docker/singularity/.../institute> \
    -params-file test_input/params_argentag.yaml
 ```
@@ -123,7 +140,7 @@ Key parameters:
 - `parse_spipe`: split-pipe command options (e.g., "--chemistry v3 --kit WT_mini")
 
 ```bash
-nextflow run nf-core/scnanoseq \
+nextflow run main.nf \
    -profile <docker/singularity/.../institute> \
    -params-file test_input/params_parse.yaml
 ```
@@ -137,10 +154,124 @@ For more details and further functionality, please refer to the parameter files 
 
 This pipeline produces feature-barcode matrices as the main output, regardless of the sequencing platform used (10X, Argentag, or Parse). These feature-barcode matrices are able to be ingested directly by most packages used for downstream analyses such as `Seurat`. Additionally, the pipeline produces a number of quality control metrics to ensure that the samples processed meet expected metrics for single-cell/nuclei data.
 
-The pipeline provides two tools to produce the aforementioned feature-barcode matrices, `IsoQuant` and `oarfish`, and the user is given the ability to choose whether to run both or just one. `IsoQuant` will require a genome fasta to be used as input to the pipeline, and will produce both gene and transcript level matrices. `oarfish` will require a transcriptome fasta to be used as input to the pipeline and will produce only transcript level matrices.
+### Main output directories
 
-To see the results of an example test run with a full size dataset refer to the [results](https://nf-co.re/scnanoseq/results) tab on the nf-core website pipeline page.
-For more details about the full set of output files and reports, please refer to the [original nf-core scnanoseq output documentation](https://nf-co.re/scnanoseq/output).
+The pipeline generates outputs organized in the following directory structure:
+
+```
+results/
+├── <sample_identifier>/
+│   ├── qc/                          # Quality control reports
+│   │   ├── fastqc/                 # FastQC reports
+│   │   ├── nanoplot/               # NanoPlot reports
+│   │   ├── toulligqc/              # ToulligQC reports
+│   │   ├── rseqc/                  # RSeQC reports
+│   │   └── seurat/                 # Seurat QC plots
+│   ├── genome/                      # Genome-aligned outputs
+│   │   ├── bam/                    # BAM files (original, mapped, tagged, deduplicated)
+│   │   ├── isoquant/               # Gene and transcript matrices (IsoQuant)
+│   │   └── qc/                     # Samtools and mapping statistics
+│   └── transcriptome/               # Transcriptome-aligned outputs
+│       ├── bam/                    # BAM files (original, mapped, tagged, deduplicated)
+│       ├── oarfish/                # Transcript matrices (oarfish)
+│       └── qc/                     # Samtools and mapping statistics
+├── batch_qcs/
+│   ├── nanocomp/                   # NanoComp reports comparing all samples
+│   └── read_counts/                # Read count statistics
+├── multiqc/                         # MultiQC aggregated report
+└── pipeline_info/                   # Nextflow execution reports
+```
+
+### Quantification matrices
+
+The pipeline produces feature-barcode matrices using two available tools:
+
+- **IsoQuant**: Requires genome fasta; produces gene-level and transcript-level HDF5 matrices
+- **oarfish**: Requires transcriptome fasta; produces transcript-level matrices in Matrix Market format
+
+Users can choose to run both tools or just one via the `quantifier` parameter.
+
+### Key output files
+
+- `*.h5`: Feature-barcode matrices in HDF5 format (IsoQuant)
+- `matrix.mtx.gz`, `barcodes.tsv.gz`, `features.tsv.gz`: Feature-barcode matrices in Matrix Market format (oarfish)
+- `*.tagged.bam`: BAM files with barcode and UMI tags
+- `*.dedup.bam`: Deduplicated BAM files (with corrected barcodes)
+- `multiqc_report.html`: Interactive QC report summarizing all pipeline results
+
+For a comprehensive description of all output files and directories, please refer to the [complete output documentation](docs/output.md).
+
+## Datasets
+
+### Full datasets used in the study
+
+The following datasets were used to develop and benchmark this fork of the scnanoseq pipeline with support for Argentag and Parse platforms:
+
+| Platform | Sample | Input reads | ENA ID |
+|----------|--------|-------------|--------|
+| 10X-3prime | 10X-3prime Rep1 | 271,541,720 | [ENA accession] |
+| 10X-3prime | 10X-3prime Rep2 | 308,376,426 | [ENA accession] |
+| 10X-3prime | 10X-3prime Rep3 | 298,694,391 | [ENA accession] |
+| 10X-5prime | 10X-5prime Rep1 | 181,076,926 | [ENA accession] |
+| 10X-5prime | 10X-5prime Rep2 | 256,241,535 | [ENA accession] |
+| 10X-5prime | 10X-5prime Rep3 | 239,552,419 | [ENA accession] |
+| Argentag | Argentag Rep1 | 190,023,577 | [ENA accession] |
+| Argentag | Argentag Rep2 | 167,392,677 | [ENA accession] |
+| Argentag | Argentag Rep3 | 137,990,113 | [ENA accession] |
+| Parse | Parse Rep1 | 204,122,101 | [ENA accession] |
+| Parse | Parse Rep2 | 379,870,956 | [ENA accession] |
+| Parse | Parse Rep3 | 412,205,016 | [ENA accession] |
+
+**Analysis workflow:**
+
+The complete analysis was performed using four separate pipeline runs, one for each platform. In each run, the samplesheet contained all three replicates for that platform. Each pipeline execution required between 36 and 72 hours to complete, with runtime variation depending on resource availability and system load on the HPC cluster.
+
+### Test datasets
+
+Test datasets have been created for quick pipeline validation and testing. These datasets were generated by subsampling the full datasets to reduce computational requirements.
+
+**Generation method:**
+
+Test datasets were created from Rep1 of each platform dataset using the following command:
+
+```bash
+seqkit sample -n 1000000 -s 42 input.fastq.gz > test_dataset.fastq.gz
+```
+
+This command randomly samples 1,000,000 reads from the original full datasets using a fixed seed (`-s 42`) to ensure reproducibility.
+
+> **Note:** Test datasets are not included in this repository due to their size. You can generate them yourself using the command above with the same seed value to create reproducible test datasets.
+
+**Test dataset specifications and runtime on CRG HPC:**
+
+| Platform | Sample | Number of reads | Wall-clock time |
+|----------|--------|-----------------|-----------------|
+| 10X-3prime | 10X-3prime Rep1 | 1,000,000 | 10h |
+| 10X-5prime | 10X-5prime Rep1 | 1,000,000 | 8h |
+| Argentag | Argentag Rep1 | 1,000,000 | 4h |
+| Parse | Parse Rep1 | 1,000,000 | N/A |
+
+> **Note on Parse test datasets:** The Parse platform requires a minimum of 1,000,000 reads as input to split-pipe for proper functionality. However, due to read loss during preprocessing (barcode extraction and quality filtering), a 1,000,000 read test dataset may result in fewer than the required reads reaching split-pipe. For reliable testing of the Parse platform, it is recommended to use larger test datasets (≥2,000,000 reads) or full datasets. Users can adjust the seqkit sampling command accordingly: `seqkit sample -n 2000000 -s 42 input.fastq.gz > test_dataset.fastq.gz`
+
+> *Runtime on CRG HPC. Actual runtime may vary depending on system load, hardware configuration, and input data characteristics.*
+
+**Running test datasets:**
+
+Once you have generated the test datasets using the seqkit command above, you can run the pipeline with the provided parameter and samplesheet files. For example, to run the 10X 3' test dataset:
+
+```bash
+nextflow run main.nf \
+   -profile <docker/singularity/.../institute> \
+   -params-file test_input/params_10X_3prime.yaml \
+   --input test_input/samplesheet_10X_3prime.csv
+```
+
+The same approach applies to the other platforms (10X 5', Argentag, and Parse) by substituting the corresponding parameter and samplesheet files:
+- 10X 5': `params_10X_5prime.yaml` and `samplesheet_10X_5prime.csv`
+- Argentag: `params_argentag.yaml` and `samplesheet_argentag.csv`
+- Parse: `params_parse.yaml` and `samplesheet_parse.csv`
+
+All parameter and samplesheet files for running the test datasets can be found in the `test_input/` directory.
 
 ## Troubleshooting
 
