@@ -1,13 +1,4 @@
-<h1>
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/nf-core-scnanoseq_logo_dark.png">
-    <img alt="nf-core/scnanoseq" src="docs/images/nf-core-scnanoseq_logo_light.png">
-  </picture>
-</h1>
-
-[![GitHub Actions CI Status](https://github.com/nf-core/scnanoseq/actions/workflows/ci.yml/badge.svg)](https://github.com/nf-core/scnanoseq/actions/workflows/ci.yml)
-[![GitHub Actions Linting Status](https://github.com/nf-core/scnanoseq/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/scnanoseq/actions/workflows/linting.yml)[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/scnanoseq/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.13899279-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.13899279)
-[![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
+**modify!!** [![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.13899279-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.13899279)
 
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.04.2-23aa62.svg)](https://www.nextflow.io/)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
@@ -17,15 +8,20 @@
 
 ## Introduction
 
-> **Note**: This is a fork of the [nf-core/scnanoseq](https://github.com/nf-core/scnanoseq) pipeline developed at the Centre for Genomic Regulation (CRG) to add support for Argentag and Parse single-cell platforms. For the original 10X-only version, please refer to the main nf-core repository.
+**NAME** is a bioinformatics best-practice analysis pipeline for single-cell/nuclei RNA-seq data derived from Ois a b
 
-**scnanoseq** is a bioinformatics best-practice analysis pipeline for single-cell/nuclei RNA-seq data derived from Oxford Nanopore Q20+ chemistry ([R10.4 flow cells (>Q20)](https://nanoporetech.com/about-us/news/oxford-nanopore-announces-technology-updates-nanopore-community-meeting)). This fork extends the pipeline to support data from multiple single-cell platforms including 10X Genomics (3' and 5' protocols), Argentag, and Parse. Due to the expectation of >Q20 quality, the input data for the pipeline does not depend on Illumina paired data. **Please note `scnanoseq` can also process Oxford data with older chemistry, but we encourage usage of the Q20+ chemistry when possible**.
+ioinformatics pipeline for processing single-cell and single-nucleus long-read RNA-seq data generated with Oxford Nanopore sequencing. It supports multiple single-cell technologies, including 10x Genomics (3' and 5' protocols), Argentag, and Parse Biosciences, providing technology-specific preprocessing followed by a unified downstream analysis workflow to enable comparable processing across platforms.
+
+xford Nanopore Q20+ chemistry ([R10.4 flow cells (>Q20)](https://nanoporetech.com/about-us/news/oxford-nanopore-announces-technology-updates-nanopore-community-meeting)). This fork extends the pipeline to support data from multiple single-cell platforms including 10X Genomics (3' and 5' protocols), Argentag, and Parse. Due to the expectation of >Q20 quality, the input data for the pipeline does not depend on Illumina paired data. **Please note that the pipeline can also process Oxford data with older chemistry, but we encourage usage of the Q20+ chemistry when possible**.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
 
+> **Note**: This is a fork of the [nf-core/scnanoseq](https://github.com/nf-core/scnanoseq) pipeline developed at the Centre for Genomic Regulation (CRG) to add support for Argentag and Parse single-cell platforms. For the original 10X-only version, please refer to the main nf-core repository.
+
+
 ## Installation
 
-**scnanoseq** is a Nextflow pipeline that uses containerization for all dependencies, making installation straightforward:
+The pipeline uses containerization for all dependencies, making installation straightforward:
 
 1. Install [Nextflow](https://www.nextflow.io/docs/latest/getstarted.html) (requires Java 11 or later)
 2. Clone this repository:
@@ -205,7 +201,7 @@ For a comprehensive description of all output files and directories, please refe
 
 ### Full datasets used in the study
 
-The following datasets were used to develop and benchmark this fork of the scnanoseq pipeline with support for Argentag and Parse platforms:
+The following datasets were used to develop and benchmark the pipeline:
 
 | Platform | Sample | Input reads | ENA ID |
 |----------|--------|-------------|--------|
