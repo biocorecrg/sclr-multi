@@ -36,7 +36,7 @@ That's it! Nextflow will automatically handle downloading and running all requir
 ## Pipeline summary
 
 **change the name in the left upper corner to a new name!!!**
-![scnanoseq diagram](docs/images/metro-map-combined.svg)
+![sclr-multi diagram](docs/images/metro-map-combined.svg)
 
 1. Raw read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
 2. Unzip and split FASTQ ([`pigz`](https://github.com/madler/pigz))
