@@ -8,7 +8,7 @@
 
 ## Introduction
 
-**NAME** is a bioinformatics pipeline for processing single-cell and single-nucleus long-read RNA-seq data generated with Oxford Nanopore sequencing. It supports multiple single-cell technologies, including 10x Genomics (3' and 5' protocols), Argentag, and Parse Biosciences, providing technology-specific preprocessing followed by a unified downstream analysis workflow to enable comparable processing across platforms.
+**NEWNAME** is a bioinformatics pipeline for processing single-cell and single-nucleus long-read RNA-seq data generated with Oxford Nanopore sequencing. It supports multiple single-cell technologies, including 10x Genomics (3' and 5' protocols), Argentag, and Parse Biosciences, providing technology-specific preprocessing followed by a unified downstream analysis workflow to enable comparable processing across platforms.
 
 The pipeline is designed primarily for Oxford Nanopore Q20+ chemistry ([R10.4 flow cells (>Q20)](https://nanoporetech.com/about-us/news/oxford-nanopore-announces-technology-updates-nanopore-community-meeting)) and does not require matched Illumina paired-end sequencing data. Data generated using older Oxford Nanopore chemistries can also be processed, although Q20+ chemistry is recommended when possible.
 
@@ -21,10 +21,10 @@ Where possible, the pipeline uses reusable modules from the [nf-core/modules](ht
 The pipeline uses containerization for all dependencies, making installation straightforward:
 
 1. Install [Nextflow](https://www.nextflow.io/docs/latest/getstarted.html) (requires Java 11 or later)
-2. Clone this repository:
+2. Clone this repository (**CHANGE NAME**):
    ```bash
-   git clone https://github.com/biocorecrg/scnanoseq.git
-   cd scnanoseq
+   git clone https://github.com/biocorecrg/newname.git
+   cd newname
    ```
 3. Run the pipeline with your preferred container engine (Docker or Singularity):
    ```bash
@@ -66,7 +66,7 @@ That's it! Nextflow will automatically handle downloading and running all requir
 ## Usage
 
 > [!NOTE]
-> If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
+> If you are new to Nextflow, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
 
 ### Prepare your samplesheet
 
@@ -141,7 +141,7 @@ nextflow run main.nf \
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
 
-For more details and further functionality, please refer to the parameter files in the `test_input` directory and the [original nf-core scnanoseq documentation](https://nf-co.re/scnanoseq).
+For more details and further functionality, please refer to the parameter files in the `test_input` directory.
 
 ## Pipeline output
 
@@ -242,7 +242,7 @@ This command randomly samples 1,000,000 reads from the original full datasets us
 
 > **Note:** Test datasets are not included in this repository due to their size. You can generate them yourself using the command above with the same seed value to create reproducible test datasets.
 
-**Test dataset specifications and runtime on CRG HPC:**
+**Test dataset specifications and runtime on the CRG HPC:**
 
 | Platform | Sample | Number of reads | Wall-clock time |
 |----------|--------|-----------------|-----------------|
