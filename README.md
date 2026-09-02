@@ -8,7 +8,7 @@
 
 # scLR-multi
 
-scLR-multi is a bioinformatics pipeline for processing single-cell and single-nucleus long-read RNA-seq data generated with Oxford Nanopore sequencing. It supports multiple single-cell technologies, including 10x Genomics (3' and 5' protocols), Argentag, and Parse Biosciences, providing technology-specific preprocessing followed by a unified downstream analysis workflow to enable comparable processing across platforms.
+scLR-multi is a bioinformatics pipeline for processing single-cell and single-nucleus long-read RNA-seq data generated with Oxford Nanopore sequencing. It supports multiple single-cell technologies, including  Genomics (3' and 5' protocols), Argentag, and Parse Biosciences, providing technology-specific preprocessing followed by a unified downstream analysis workflow to enable comparable processing across platforms.
 
 The pipeline is designed primarily for Oxford Nanopore Q20+ chemistry ([R10.4 flow cells (>Q20)](https://nanoporetech.com/about-us/news/oxford-nanopore-announces-technology-updates-nanopore-community-meeting)) and does not require matched Illumina paired-end sequencing data. Data generated using older Oxford Nanopore chemistries can also be processed, although Q20+ chemistry is recommended when possible.
 
@@ -43,8 +43,8 @@ That's it! Nextflow will automatically handle downloading and running all requir
 3. Trim and filter reads ([`Nanofilt`](https://github.com/wdecoster/nanofilt))
 4. Post trim QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`NanoComp`](https://github.com/wdecoster/nanocomp) and [`ToulligQC`](https://github.com/GenomiqueENS/toulligQC))
 5. Platform-specific demultiplexing and barcode extraction:
-   1. **10X Genomics**: 
-      - Barcode detection using 10X whitelist ([`BLAZE`](https://github.com/shimlab/BLAZE))
+   1. **10x Genomics**: 
+      - Barcode detection using  whitelist ([`BLAZE`](https://github.com/shimlab/BLAZE))
       - Extract barcodes: Parse FASTQ files into R1 reads containing barcode and UMI and R2 reads containing sequencing without barcode and UMI (custom script `./bin/pre_extract_barcodes.py`)
       - Barcode correction (custom script `./bin/correct_barcodes.py`)
    2. **Argentag**:
@@ -89,7 +89,7 @@ Each row represents a single-end fastq file. Rows with the same sample identifie
 
 The pipeline supports three single-cell sequencing platforms. Use the appropriate parameter file for your platform:
 
-#### 10X Genomics 3' Protocol
+####  10x Genomics 3' Protocol
 
 Key parameters:
 - `platform`: "10X"
@@ -101,7 +101,7 @@ nextflow run main.nf \
    -params-file test_input/params_10X_3prime.yaml
 ```
 
-#### 10X Genomics 5' Protocol
+#### 10x Genomics 5' Protocol
 
 Key parameters:
 - `platform`: "10X"
@@ -145,7 +145,7 @@ For more details and further functionality, please refer to the parameter files 
 
 ## Pipeline output
 
-This pipeline produces feature-barcode matrices as the main output, regardless of the sequencing platform used (10X, Argentag, or Parse). These feature-barcode matrices are able to be ingested directly by most packages used for downstream analyses such as `Seurat`. Additionally, the pipeline produces a number of quality control metrics to ensure that the samples processed meet expected metrics for single-cell/nuclei data.
+This pipeline produces feature-barcode matrices as the main output, regardless of the sequencing platform used (10x, Argentag, or Parse). These feature-barcode matrices are able to be ingested directly by most packages used for downstream analyses such as `Seurat`. Additionally, the pipeline produces a number of quality control metrics to ensure that the samples processed meet expected metrics for single-cell/nuclei data.
 
 ### Main output directories
 
@@ -196,7 +196,7 @@ For a comprehensive description of all output files and directories, please refe
 
 ## Datasets
 
-The following datasets were used to develop and benchmark the pipeline (ENA Study XYZ):
+The following datasets were used to develop and benchmark the pipeline (**ENA Study XYZ**):
 
 | Platform | Sample | Input reads | ENA ID |
 |----------|--------|-------------|--------|
