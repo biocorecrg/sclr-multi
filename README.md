@@ -8,16 +8,13 @@
 
 ## Introduction
 
-**NAME** is a bioinformatics best-practice analysis pipeline for single-cell/nuclei RNA-seq data derived from Ois a b
+**NAME** is a bioinformatics pipeline for processing single-cell and single-nucleus long-read RNA-seq data generated with Oxford Nanopore sequencing. It supports multiple single-cell technologies, including 10x Genomics (3' and 5' protocols), Argentag, and Parse Biosciences, providing technology-specific preprocessing followed by a unified downstream analysis workflow to enable comparable processing across platforms.
 
-ioinformatics pipeline for processing single-cell and single-nucleus long-read RNA-seq data generated with Oxford Nanopore sequencing. It supports multiple single-cell technologies, including 10x Genomics (3' and 5' protocols), Argentag, and Parse Biosciences, providing technology-specific preprocessing followed by a unified downstream analysis workflow to enable comparable processing across platforms.
+The pipeline is designed primarily for Oxford Nanopore Q20+ chemistry ([R10.4 flow cells (>Q20)](https://nanoporetech.com/about-us/news/oxford-nanopore-announces-technology-updates-nanopore-community-meeting)) and does not require matched Illumina paired-end sequencing data. Data generated using older Oxford Nanopore chemistries can also be processed, although Q20+ chemistry is recommended when possible.
 
-xford Nanopore Q20+ chemistry ([R10.4 flow cells (>Q20)](https://nanoporetech.com/about-us/news/oxford-nanopore-announces-technology-updates-nanopore-community-meeting)). This fork extends the pipeline to support data from multiple single-cell platforms including 10X Genomics (3' and 5' protocols), Argentag, and Parse. Due to the expectation of >Q20 quality, the input data for the pipeline does not depend on Illumina paired data. **Please note that the pipeline can also process Oxford data with older chemistry, but we encourage usage of the Q20+ chemistry when possible**.
+The pipeline is implemented in [Nextflow](https://www.nextflow.io) using DSL2, enabling execution across different computing infrastructures. Software dependencies are provided through containers, supporting portable and reproducible execution. Individual pipeline processes use separate containers, allowing dependencies to be maintained and updated independently.
 
-The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
-
-> **Note**: This is a fork of the [nf-core/scnanoseq](https://github.com/nf-core/scnanoseq) pipeline developed at the Centre for Genomic Regulation (CRG) to add support for Argentag and Parse single-cell platforms. For the original 10X-only version, please refer to the main nf-core repository.
-
+Where possible, the pipeline uses reusable modules from the [nf-core/modules](https://github.com/nf-core/modules) repository. Additional modules and processes were developed for technology-specific processing required by the supported single-cell platforms.
 
 ## Installation
 
@@ -365,35 +362,13 @@ process
 
 ## Credits
 
-nf-core/scnanoseq was originally written by [Austyn Trull](https://github.com/atrull314), and [Dr. Lara Ianov](https://github.com/lianov).
+This pipeline was developed and is maintained by the Bioinformatics Unit at the Centre for Genomic Regulation (CRG), Barcelona.
 
-This fork of the scnanoseq pipeline was developed by **Anna Delgado** from the Bioinformatics Unit at the Centre for Genomic Regulation (CRG) to extend support for additional single-cell sequencing platforms (Argentag and Parse).
+The pipeline was initially derived from [nf-core/scnanoseq](https://github.com/nf-core/scnanoseq), which provides processing of Oxford Nanopore single-cell RNA-seq data generated using 10x Genomics. It has since been extended at CRG into a multi-platform workflow supporting 10x Genomics (3' and 5' protocols), Argentag, and Parse Biosciences, with technology-specific preprocessing followed by a unified downstream analysis workflow to facilitate comparable processing across technologies.
 
-We would also like to thank the following people and groups for their support, including financial support:
-
-- Dr. Elizabeth Worthey
-- University of Alabama at Birmingham Biological Data Science Core (U-BDS), RRID:SCR_021766, <https://github.com/U-BDS>
-- Civitan International Research Center
-- Support from: 3P30CA013148-48S8
+We acknowledge the developers and contributors of nf-core/scnanoseq, nf-core/modules, and the wider nf-core community whose workflow components and infrastructure provided the foundation for parts of this pipeline.
 
 ## Citations
 
-If you use nf-core/scnanoseq for your analysis, please cite the article as follows:
+**to add zenodo and biorxiv**
 
-> **scnanoseq: an nf-core pipeline for Oxford Nanopore single-cell RNA-sequencing**
->
-> Austyn Trull, nf-core community, Elizabeth A. Worthey, Lara Ianov
->
-> bioRxiv 2025.04.08.647887; doi: https://doi.org/10.1101/2025.04.08.647887
-
-The specific pipleine version can be cited using the following doi: [10.5281/zenodo.13899279](https://doi.org/10.5281/zenodo.13899279)
-
-An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
-
-You can cite the `nf-core` publication as follows:
-
-> **The nf-core framework for community-curated bioinformatics pipelines.**
->
-> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
->
-> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).
