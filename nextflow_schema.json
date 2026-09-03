@@ -1,8 +1,8 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/nf-core/scnanoseq/master/nextflow_schema.json",
-    "title": "nf-core/scnanoseq pipeline parameters",
-    "description": "Single-cell/nuclei pipeline for data derived from Oxford Nanopore",
+    "$id": "https://raw.githubusercontent.com/biocorecrg/sclr-multi/master/nextflow_schema.json",
+    "title": "scLR-multi pipeline parameters",
+    "description": "Multi-platform pipeline for unified processing of single-cell and single-nucleus long-read RNA-seq data"
     "type": "object",
     "$defs": {
         "input_output_options": {
@@ -20,7 +20,8 @@
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
                     "description": "Path to comma-separated file containing information about the samples in the experiment.",
-                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/scnanoseq/usage#samplesheet-input).",
+                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. See the scLR-multi README for input format and platform-specific requirements."
+                    
                     "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {
@@ -383,7 +384,7 @@
             "type": "object",
             "fa_icon": "fas fa-file-import",
             "description": "Less common options for the pipeline, typically set in a config file.",
-            "help_text": "These options are common to all nf-core pipelines and allow you to customise some of the core preferences for how the pipeline runs.\n\nTypically these options would be set in a Nextflow config file loaded for all pipeline runs, such as `~/.nextflow/config`.",
+            "help_text": "These are generic options for controlling how the pipeline runs.  \n\nTypically these options would be set in a Nextflow config file loaded for all pipeline runs, such as `~/.nextflow/config`.",
             "properties": {
                 "version": {
                     "type": "boolean",
