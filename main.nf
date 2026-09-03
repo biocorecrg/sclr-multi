@@ -1,11 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    nf-core/scnanoseq
+    scLR-multi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/nf-core/scnanoseq
-    Website: https://nf-co.re/scnanoseq
-    Slack  : https://nfcore.slack.com/channels/scnanoseq
+    Github : https://github.com/biocorecrg/sclr-multi
 ----------------------------------------------------------------------------------------
 */
 
