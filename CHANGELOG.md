@@ -2,7 +2,13 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## v1.0.0 [2026-XX-XX]
+## [Unreleased]
+
+### Changed
+
+- Updated project metadata and documentation for the independent scLR-multi release.
+
+## v1.0.0 [2026-08-28]
 
 ### Added
 
