@@ -1,7 +1,20 @@
-# nf-core/scnanoseq: Changelog
+# scLR-multi: Changelog
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/) and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## v1.0.0 [2026-XX-XX]
+
+### Added
+
+- Extended support for multiple single-cell long-read RNA-seq technologies.
+- Added support for 10x Genomics 3' and 5' protocols, Parse Biosciences, and Argentag.
+- Added technology-specific preprocessing followed by a unified downstream analysis workflow.
+
+### Changed
+
+- Pipeline identity and documentation updated from nf-core/scnanoseq to scLR-multi.
+
+## Upstream nf-core/scnanoseq history
 
 ## v1.2.1 [2025-09-02]
 
