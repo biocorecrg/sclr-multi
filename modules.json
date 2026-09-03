@@ -1,6 +1,6 @@
 {
-    "name": "nf-core/scnanoseq",
-    "homePage": "https://github.com/nf-core/scnanoseq",
+    "name": "biocorecrg/sclr-multi",
+    "homePage": "https://github.com/biocorecrg/sclr-multi",
     "repos": {
         "https://github.com/nf-core/modules.git": {
             "modules": {
