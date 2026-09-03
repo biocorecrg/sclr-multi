@@ -1,4 +1,13 @@
-# nf-core/scnanoseq: Citations
+# scLR-multi: Citations
+
+## scLR-multi
+
+If you use scLR-multi, please cite the scLR-multi publication:
+
+> Citation will be added upon publication.
+
+scLR-multi was initially derived from [nf-core/scnanoseq](https://github.com/nf-core/scnanoseq) and uses components from the nf-core framework.
+
 
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 
