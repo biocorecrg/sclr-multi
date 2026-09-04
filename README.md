@@ -194,6 +194,14 @@ Users can choose to run both tools or just one via the `quantifier` parameter.
 
 For a comprehensive description of all output files and directories, please refer to the [complete output documentation](docs/output.md).
 
+## Benchmark analyses
+
+In addition to the general-purpose scLR-multi workflow, this repository contains the custom scripts used for the benchmarking and comparative analyses reported in the associated manuscript.
+
+These include downstream analyses of long-read gene- and isoform-level outputs, processing of matched short-read datasets, downsampling and sequencing-saturation analyses, clustering and biological signal assessment, and short- versus long-read comparisons.
+
+The benchmark-specific code is available in the `benchmark/` directory. These scripts reproduce the analyses performed for the manuscript and are not part of the standard scLR-multi Nextflow workflow.
+
 ## Datasets
 
 The datasets used to develop and benchmark the pipeline are available from the European Nucleotide Archive (ENA) under study accession [PRJEB125152](https://www.ebi.ac.uk/ena/browser/view/PRJEB125152).
