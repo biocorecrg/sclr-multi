@@ -12,6 +12,11 @@ process NANOQ {
     tuple val(meta), path(ontreads)
     val output_format
 
+    output:
+    tuple val(meta), path("*.{stats,json}")            , emit: stats
+    tuple val(meta), path("${prefix}.${output_format}"), emit: reads
+    path "versions.yml"                                , emit: versions
+
     when:
     task.ext.when == null || task.ext.when
 
@@ -43,9 +48,4 @@ process NANOQ {
         nanoq: \$(nanoq --version | sed -e 's/nanoq //g')
     END_VERSIONS
     """
-
-    output:
-    tuple val(meta), path("*.{stats,json}"), emit: stats
-    tuple val(meta), path("${prefix}.${output_format}"), emit: reads
-    path "versions.yml", emit: versions
 }

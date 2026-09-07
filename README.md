@@ -1,4 +1,4 @@
-[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.04.2-23aa62.svg)](https://www.nextflow.io/)
+[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.10.4-23aa62.svg)](https://www.nextflow.io/)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
@@ -20,7 +20,7 @@ Where possible, the pipeline uses reusable modules from the [nf-core/modules](ht
 
 The pipeline uses containerization for all dependencies, making installation straightforward:
 
-1. Install [Nextflow](https://www.nextflow.io/docs/latest/getstarted.html) (requires Java 11 or later)
+1. Install [Nextflow](https://www.nextflow.io/docs/latest/getstarted.html) (`>=24.10.4`, requires Java 11 or later)
 2. Clone this repository:
    ```bash
    git clone https://github.com/biocorecrg/sclr-multi.git
