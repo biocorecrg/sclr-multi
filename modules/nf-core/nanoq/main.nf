@@ -10,12 +10,7 @@ process NANOQ {
 
     input:
     tuple val(meta), path(ontreads)
-    val(output_format) //One of the following: fastq, fastq.gz, fastq.bz2, fastq.lzma, fasta, fasta.gz, fasta.bz2, fasta.lzma.
-
-    output:
-    tuple val(meta), path("*.{stats,json}")            , emit: stats
-    tuple val(meta), path("${prefix}.${output_format}"), emit: reads
-    path "versions.yml"                                , emit: versions
+    val output_format
 
     when:
     task.ext.when == null || task.ext.when
@@ -27,6 +22,7 @@ process NANOQ {
     nanoq -i ${ontreads} \\
         ${args} \\
         -r ${prefix}.stats \\
+        -o ${prefix}.${output_format}
         
 
     cat <<-END_VERSIONS > versions.yml
@@ -47,4 +43,9 @@ process NANOQ {
         nanoq: \$(nanoq --version | sed -e 's/nanoq //g')
     END_VERSIONS
     """
+
+    output:
+    tuple val(meta), path("*.{stats,json}"), emit: stats
+    tuple val(meta), path("${prefix}.${output_format}"), emit: reads
+    path "versions.yml", emit: versions
 }
