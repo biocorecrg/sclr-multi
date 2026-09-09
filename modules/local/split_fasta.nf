@@ -2,7 +2,7 @@ process SPLIT_FASTA {
     label 'process_low'
 
     conda "conda-forge::sed=4.7"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    container "${ workflow?.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/ubuntu:20.04' :
         'nf-core/ubuntu:20.04' }"
 
@@ -26,5 +26,11 @@ process SPLIT_FASTA {
     "${task.process}":
         cat: \$(echo \$(cat --version) | sed 's/^.*cat (GNU coreutils) //; s/ .*//')
     END_VERSIONS
+    """
+
+    stub:
+    """
+    touch test.split.fa
+    touch versions.yml
     """
 }
