@@ -128,7 +128,7 @@ process_references() {
             local URL="${REF_FASTA_URLS[$SPECIES]}"
             local PREFIX="${PREFIXES[$SPECIES]}"
             echo "   -> Downloading and prefixing ${SPECIES} FASTA (prefix: '${PREFIX}'): ${URL}"
-            curl -sSL --fail "${URL}" | gzip -dc | sed -e "s/^>/ >${PREFIX}/" -e "s/^> />/" >> "${TMP_FASTA}"
+            curl -sSL --fail "${URL}" | gzip -dc | sed "s/^>/>${PREFIX}/" >> "${TMP_FASTA}"
         done
         mv "${TMP_FASTA}" "${COMBINED_FASTA}"
         echo "--> Successfully created combined FASTA ${COMBINED_FASTA} ($(du -h "${COMBINED_FASTA}" | awk '{print $1}'))!"
