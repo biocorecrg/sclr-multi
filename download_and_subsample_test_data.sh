@@ -11,7 +11,7 @@ declare -A SAMPLES=(
     ["10X-3prime"]="ERR17793697 1000000 10X-3prime.fastq.gz"
     ["10X-5prime"]="ERR17793700 1000000 10X-5prime.fastq.gz"
     ["Argentag"]="ERR17793703 1000000 Argentag.fastq.gz"
-    ["Parse"]="ERR17793706 2000000 Parse.fastq.gz"
+    ["Parse"]="ERR17793706 4000000 Parse.fastq.gz"
 )
 
 # Ensembl v111 reference URLs
