@@ -9,7 +9,7 @@ process GENERATE_PE {
     tuple val(meta),   path(reads)
 
     output:
-    tuple val(meta_updated), path("*_R{1,2}.fastq.gz")                       , emit: out
+    tuple val(meta), path("*_R{1,2}.fastq.gz")                       , emit: out
     path  "versions.yml"                                          , emit: versions
 
     when:
@@ -18,7 +18,6 @@ process GENERATE_PE {
     script:
     def args          = task.ext.args ?: ''
     def sample_name   = reads.name.replaceAll(/\.fq$/, '')
-    meta_updated = meta + [single_end: false]
 
     """
 

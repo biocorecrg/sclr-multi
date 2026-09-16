@@ -25,7 +25,7 @@ workflow QCFASTQ_NANOPLOT_FASTQC {
     main:
     ch_fastq
         .map { ch -> [ ch[0], ch[1] ] }
-        .set { ch_fastq }
+        .set { ch_fastq_mapped }
 
     /*
      * FastQ QC using NanoPlot
@@ -36,7 +36,7 @@ workflow QCFASTQ_NANOPLOT_FASTQC {
     nanoplot_log     = channel.empty()
     nanoplot_version = channel.empty()
     if (!skip_nanoplot){
-        NANOPLOT ( ch_fastq )
+        NANOPLOT ( ch_fastq_mapped )
         nanoplot_png     = NANOPLOT.out.png
         nanoplot_html    = NANOPLOT.out.html
         nanoplot_txt     = NANOPLOT.out.txt
@@ -52,7 +52,7 @@ workflow QCFASTQ_NANOPLOT_FASTQC {
     toulligqc_plotly_js     = channel.empty()
     toulligqc_version       = channel.empty()
     if (!skip_toulligqc){
-        TOULLIGQC ( ch_fastq )
+        TOULLIGQC ( ch_fastq_mapped )
         toulligqc_report_data  = TOULLIGQC.out.report_data
         toulligqc_report_html  = TOULLIGQC.out.report_html
         toulligqc_plots_html   = TOULLIGQC.out.plots_html
@@ -68,7 +68,7 @@ workflow QCFASTQ_NANOPLOT_FASTQC {
     fastqc_multiqc = channel.empty()
     fastqc_version = channel.empty()
     if (!skip_fastqc){
-        FASTQC ( ch_fastq )
+        FASTQC ( ch_fastq_mapped )
         fastqc_zip     = FASTQC.out.zip
         fastqc_html    = FASTQC.out.html
         fastqc_zip
@@ -89,7 +89,7 @@ workflow QCFASTQ_NANOPLOT_FASTQC {
     nanoq_version    = channel.empty()
     
     if (!skip_nanoq){
-        NANOQ ( ch_fastq, 'fastq.gz' )
+        NANOQ ( ch_fastq_mapped, 'fastq.gz' )
         nanoq_stats     = NANOQ.out.stats
         nanoq_reads     = NANOQ.out.reads
         nanoq_version   = NANOQ.out.versions

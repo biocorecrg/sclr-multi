@@ -220,9 +220,8 @@ workflow SCNANOSEQ {
     // MODULE: Trim and filter reads
     //
     ch_fastqc_multiqc_postrim = channel.empty()
-    ch_trimmed_reads_combined = channel.empty()
+    ch_trimmed_reads_combined_tmp = params.skip_trimming ? ch_unzipped_fastqs : channel.empty()
 
-    // NOTE: this block of code, doesn't have much sense as it splits and later concatenates without any filtering?
     if (!params.skip_trimming) {
         //
         // MODULE: Split fastq
@@ -251,10 +250,10 @@ workflow SCNANOSEQ {
         }
 
         // If the fastqs were split, combine them together
-        ch_trimmed_reads_combined = ch_trimmed_reads
+        ch_trimmed_reads_combined_tmp = ch_trimmed_reads
         if (params.split_amount > 0) {
             CAT_CAT(ch_trimmed_reads.groupTuple())
-            ch_trimmed_reads_combined = CAT_CAT.out.file_out
+            ch_trimmed_reads_combined_tmp = CAT_CAT.out.file_out
         }
 
         //
@@ -265,7 +264,7 @@ workflow SCNANOSEQ {
             //
             // MODULE: Run qc on the post trimmed reads
             //
-            FASTQC_NANOPLOT_POST_TRIM(ch_trimmed_reads_combined, params.skip_nanoplot, params.skip_toulligqc, params.skip_fastqc, params.skip_nanoq)
+            FASTQC_NANOPLOT_POST_TRIM(ch_trimmed_reads_combined_tmp, params.skip_nanoplot, params.skip_toulligqc, params.skip_fastqc, params.skip_nanoq)
 
             ch_fastqc_multiqc_postrim = FASTQC_NANOPLOT_POST_TRIM.out.fastqc_multiqc.ifEmpty([])
             ch_nanostat_posttrim = FASTQC_NANOPLOT_POST_TRIM.out.nanoplot_txt.ifEmpty([])
@@ -276,9 +275,8 @@ workflow SCNANOSEQ {
             ch_versions = ch_versions.mix(FASTQC_NANOPLOT_POST_TRIM.out.nanoq_version.first().ifEmpty(null))
         }
     }
-    else {
-        ch_trimmed_reads_combined = ch_unzipped_fastqs
-    }
+
+    ch_trimmed_reads_combined = ch_trimmed_reads_combined_tmp
 
     // DEMULTIPLEXING MODULES:
 
@@ -396,7 +394,7 @@ workflow SCNANOSEQ {
             .groupTuple(by: 0)
             .map { meta, reads ->
                 def read_list = reads.flatten()
-                [meta, read_list]
+                [meta + [single_end: false], read_list]
             }
 
         ch_concatenated = CAT_FASTQ_PARSE(ch_to_concat)
