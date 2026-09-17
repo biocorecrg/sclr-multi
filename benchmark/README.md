@@ -108,14 +108,101 @@ Custom downstream analyses performed on processed gene- and isoform-cell matrice
 
 | Script | Analysis | Main input | Main output | Status |
 | --- | --- | --- | --- | --- |
-| `preprocess_matrices.py` | Feature annotation, mitochondrial/ribosomal annotation, cell calling for non-10x platforms, species assignment, and matrix merging | IsoQuant matrices | Annotated pooled matrices | TODO |
-| `qc_filtering.py` | Feature/cell QC filtering and Scrublet doublet detection | Annotated matrices | Filtered matrices and QC summaries | TODO |
-| `clustering.py` | Normalization, HVG selection, PCA, Harmony integration, KNN, UMAP, Leiden clustering, and silhouette-based resolution selection | Filtered matrices | Clustered matrices and embeddings | TODO |
-| `cell_cycle.py` | S/G2M scoring and cell-cycle phase assignment | Isoform matrices and cell-cycle gene set | Cell-cycle scores and phase labels | TODO |
 | `saturation.py` | Gene- and isoform-level per-cell sequencing saturation | Count matrices | Saturation statistics and curves | TODO |
 | `feature_replicability.py` | Within- and between-platform feature replicability | Downsampled matrices | Feature overlaps and UpSet plots | TODO |
 
-Two of the analyses above — clustering/proliferation benchmarking and differential isoform expression between NIH-3T3 subclusters — rely on the downsampling scripts described in `downsampling/` below.
+Feature annotation, QC filtering, clustering/batch-correction, and cell-cycle scoring are implemented in `matrix_analysis/` below, and the two downsampling analyses (clustering/proliferation benchmarking and differential isoform expression between NIH-3T3 subclusters) rely on the scripts described in `downsampling/`.
+
+### `matrix_analysis/`
+
+`Scanpy_analysis.py` is a single CLI implementing the core downstream matrix-processing pipeline, exposed as mutually exclusive subcommands: feature annotation, QC filtering, clustering with batch correction, marker-gene detection per cluster, and pseudobulk differential expression between clusters/conditions. It supersedes the `preprocess_matrices.py`, `qc_filtering.py`, and `clustering.py` placeholders previously listed above. Running it with no subcommand executes the full pipeline in order: `annotate_features` → `filter` → `cluster` → `marker`.
+
+For the manuscript, five subcommands were used: `annotate_features`, `filter` (using its default thresholds — `--min_genes 1000`, `--max_gene 5000`, `--min_cells_gene 15`, `--max_total_counts 20000`, `--max_mt_pct 15.0`), `cluster`, and `diffexp` were run per platform/condition — `cluster` on each platform's filtered matrix, and `diffexp` for differential expression between that platform's own clusters. `merge` is then run to combine the per-platform clustered matrices into a single dataset, and `cluster` is run a second time on this merged dataset, to assess how data from the different platforms behave/mix together (in addition to, not instead of, the per-platform clustering).
+
+| Subcommand | Analysis | Main input | Main output | Status |
+| --- | --- | --- | --- | --- |
+| `annotate_features` | Feature annotation via BioMart (gene/transcript IDs, names, chromosome), mitochondrial/ribosomal flagging, per-sample/condition/replicate metadata, species assignment (dominant-genome proportion vs. `--specie_threshold`) for multi-species data, knee-point-based cell calling for non-10x platforms (ArgenTag/Parse), merging of the input matrices, QC-metric calculation, and unfiltered QC plots | One or more raw count matrices (`.h5ad`/10x `.h5`) | Annotated, merged matrix (h5ad); unfiltered QC plots and per-sample/species stats | DONE |
+| `filter` | Cell/feature QC filtering (hardcoded thresholds or MAD-based dynamic outlier detection on genes/cell, total counts, and % mitochondrial), gene-level Scrublet doublet detection, filtered QC plots | Annotated matrix (h5ad) | Filtered matrix (h5ad); filtered QC plots and stats | DONE |
+| `cluster` | Normalization (log1p, target sum 10,000), HVG selection (10% of non-MT features), PCA, neighbors/UMAP, Leiden clustering across 6 resolutions (0.05/0.1/0.3/0.5/1.0/1.5) with silhouette-based resolution selection, and Harmony batch correction (by sample or by condition) followed by re-clustering on the corrected embedding | Filtered matrix (h5ad) | Uncorrected and Harmony-corrected clustered matrices (h5ad); UMAP and variance-explained plots | DONE |
+| `marker` | One-vs-rest Wilcoxon marker-gene/isoform detection per cluster, at one or more clustering resolutions | Clustered matrix (h5ad) with a `raw_counts` layer | Per-resolution marker tables (TSV) and dotplots | DONE |
+| `diffexp` | Pseudobulk aggregation (via `decoupler`) and differential expression between clusters/conditions (EdgeR via `pertpy`), with `edgeR::filterByExpr` gene filtering, explicit/baseline/all-pairwise comparisons, and log2FC/FDR/logCPM filtering | Clustered matrix (h5ad) with a `raw_counts` layer | DE result tables (TSV, filtered and unfiltered) and volcano plots | DONE |
+| `merge` | Merging of multiple already-processed `.h5ad` matrices | Two or more `.h5ad` matrices | Single merged matrix (h5ad) | DONE |
+| `umap_plotting` | Plotting the expression of specific genes/transcripts on a precomputed UMAP | Clustered matrix (h5ad) | Composite UMAP panel (PDF) | DONE |
+
+Example usage reproducing the manuscript pipeline: `annotate_features` → `filter` → `cluster` → `diffexp` run once per platform (clustering and DE-between-clusters within that platform alone), then `merge` to combine all platforms, followed by a second `cluster` run on the merged dataset to assess how data from the different platforms behave/mix together:
+
+```bash
+# 1. Annotate features for one platform (merges its replicate matrices, assigns species)
+python3 Scanpy_analysis.py \
+  -i 10X-3PRIME_rep1.h5ad 10X-3PRIME_rep2.h5ad 10X-3PRIME_rep3.h5ad \
+  -o results/ -feature_type gene \
+  annotate_features --platform_type 10X \
+  --genomes hsapiens_gene_ensembl mmusculus_gene_ensembl clfamiliaris_gene_ensembl \
+  --condition 10X-3PRIME --replicate rep1 rep2 rep3
+
+# 2. QC filtering, using the default thresholds
+python3 Scanpy_analysis.py \
+  -i results/gene/matrixes/10X-3PRIME_gene_annotated_matrix.h5ad \
+  -o results/ -feature_type gene \
+  filter
+
+# 3. Clustering with Harmony batch correction, within this platform (repeat steps 1-4 for each platform)
+python3 Scanpy_analysis.py \
+  -i results/gene/matrixes/10X-3PRIME_gene_filtered_annotated_matrix.h5ad \
+  -o results/ -feature_type gene \
+  cluster
+
+# 4. Differential expression between clusters, on this platform's own clustered matrix
+python3 Scanpy_analysis.py \
+  -i results/gene/matrixes/10X-3PRIME_gene_corrected_clustered_matrix.h5ad \
+  -o results/ -feature_type gene \
+  diffexp --grouping corrected_leiden_res0.3 --sample_column sample
+
+# 5. Merge the clustered matrices from all platforms into one dataset
+python3 Scanpy_analysis.py \
+  -i results/gene/matrixes/10X-3PRIME_gene_corrected_clustered_matrix.h5ad \
+     results/gene/matrixes/10X-5PRIME_gene_corrected_clustered_matrix.h5ad \
+     results/gene/matrixes/ARGENTAG_gene_corrected_clustered_matrix.h5ad \
+     results/gene/matrixes/PARSE_gene_corrected_clustered_matrix.h5ad \
+  -o results/ -feature_type gene \
+  merge --name all_platforms
+
+# 6. Re-cluster the merged, multi-platform dataset, to assess cross-platform mixing/behavior
+python3 Scanpy_analysis.py \
+  -i results/gene/matrixes/all_platforms_matrix.h5ad \
+  -o results/ -feature_type gene \
+  cluster
+```
+
+#### Cell-cycle scoring
+
+`cell_cycle_scoring.py` scores every cell for cell-cycle phase (G1/S/G2M) and is run independently of the `annotate_features`/`filter`/`cluster`/`merge`/`diffexp` sequence above (its output — the `..._cell_cycle_scored.h5ad` matrices — feeds into the [`downsampling/`](#downsampling) analyses below). It matches genes via the `gene_id` column and uses raw counts (a `raw_counts`/`counts`/`X_raw`/`raw` layer, if present, is used automatically).
+
+The scoring gene sets are the **mouse** S-phase and G2/M-phase marker genes from Tirosh et al. (2016), specified as mouse Ensembl gene IDs (`ENSMUSG…`, see table below). Because these IDs are mouse-specific, **only mouse cells carry counts against them**: human and dog features are annotated with their own organism-specific Ensembl IDs and never match this gene set, so their `S_score`/`G2M_score` carry no real signal. **Significant cell-cycle/proliferation results are therefore only expected in the mouse (NIH-3T3) cells**; human and dog cells are effectively unscored and default to phase `G1`.
+
+`sc.tl.score_genes_cell_cycle` is run on log-normalized counts to compute `S_score`/`G2M_score` per cell; the `phase` (G1/S/G2M) label is then assigned per sample using an absolute threshold (median + 1 SD, floored at 0), rather than scanpy's default per-cell argmax.
+
+| Script | Analysis | Main input | Main output | Status |
+| --- | --- | --- | --- | --- |
+| `cell_cycle_scoring.py` | S/G2M cell-cycle scoring and G1/S/G2M phase assignment using mouse marker genes, plus UMAP visualization of scores/phase | One or more count matrices (`.h5ad`/`.h5`/`.csv`) with a `gene_id` column in `.var` | Per-sample scored matrix (`<sample>_cell_cycle_scored.h5ad`), UMAP plots, and a gene-list summary (`cell_cycle_genes_summary.txt`/`.csv`) | DONE |
+
+Usage:
+
+```bash
+python3 cell_cycle_scoring.py \
+  --input 10X-3PRIME_gene_corrected_clustered_matrix.h5ad ARGENTAG_gene_corrected_clustered_matrix.h5ad \
+  --output_dir results/cell_cycle/
+```
+
+<details>
+<summary>Mouse cell-cycle marker genes (Ensembl IDs, Tirosh et al. 2016)</summary>
+
+| Phase | n genes | Ensembl gene IDs |
+| --- | --- | --- |
+| S phase | 43 | ENSMUSG00000000028, ENSMUSG00000001228, ENSMUSG00000002870, ENSMUSG00000004642, ENSMUSG00000005410, ENSMUSG00000006678, ENSMUSG00000006715, ENSMUSG00000017499, ENSMUSG00000020649, ENSMUSG00000022360, ENSMUSG00000022422, ENSMUSG00000022673, ENSMUSG00000022945, ENSMUSG00000023104, ENSMUSG00000024151, ENSMUSG00000024742, ENSMUSG00000025001, ENSMUSG00000025395, ENSMUSG00000025747, ENSMUSG00000026355, ENSMUSG00000027242, ENSMUSG00000027323, ENSMUSG00000027342, ENSMUSG00000028212, ENSMUSG00000028282, ENSMUSG00000028560, ENSMUSG00000028693, ENSMUSG00000028884, ENSMUSG00000029591, ENSMUSG00000030346, ENSMUSG00000030528, ENSMUSG00000030726, ENSMUSG00000030978, ENSMUSG00000031629, ENSMUSG00000031821, ENSMUSG00000032397, ENSMUSG00000034329, ENSMUSG00000037474, ENSMUSG00000039748, ENSMUSG00000041712, ENSMUSG00000042489, ENSMUSG00000046179, ENSMUSG00000055612 |
+| G2/M phase | 54 | ENSMUSG00000001403, ENSMUSG00000004880, ENSMUSG00000005698, ENSMUSG00000006398, ENSMUSG00000009575, ENSMUSG00000012443, ENSMUSG00000015749, ENSMUSG00000017716, ENSMUSG00000019942, ENSMUSG00000019961, ENSMUSG00000020330, ENSMUSG00000020737, ENSMUSG00000020808, ENSMUSG00000020897, ENSMUSG00000020914, ENSMUSG00000022385, ENSMUSG00000022391, ENSMUSG00000023505, ENSMUSG00000024056, ENSMUSG00000024795, ENSMUSG00000026605, ENSMUSG00000026622, ENSMUSG00000026683, ENSMUSG00000027306, ENSMUSG00000027379, ENSMUSG00000027469, ENSMUSG00000027496, ENSMUSG00000027699, ENSMUSG00000028044, ENSMUSG00000028678, ENSMUSG00000028873, ENSMUSG00000029177, ENSMUSG00000031004, ENSMUSG00000032218, ENSMUSG00000032254, ENSMUSG00000034349, ENSMUSG00000035293, ENSMUSG00000036752, ENSMUSG00000036777, ENSMUSG00000037313, ENSMUSG00000037544, ENSMUSG00000037725, ENSMUSG00000038252, ENSMUSG00000038379, ENSMUSG00000040549, ENSMUSG00000044201, ENSMUSG00000044783, ENSMUSG00000045328, ENSMUSG00000048327, ENSMUSG00000048922, ENSMUSG00000054717, ENSMUSG00000062248, ENSMUSG00000068744, ENSMUSG00000074802 |
+
+</details>
 
 ### `downsampling/`
 
