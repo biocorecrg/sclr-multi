@@ -112,12 +112,57 @@ Custom downstream analyses performed on processed gene- and isoform-cell matrice
 | `qc_filtering.py` | Feature/cell QC filtering and Scrublet doublet detection | Annotated matrices | Filtered matrices and QC summaries | TODO |
 | `clustering.py` | Normalization, HVG selection, PCA, Harmony integration, KNN, UMAP, Leiden clustering, and silhouette-based resolution selection | Filtered matrices | Clustered matrices and embeddings | TODO |
 | `cell_cycle.py` | S/G2M scoring and cell-cycle phase assignment | Isoform matrices and cell-cycle gene set | Cell-cycle scores and phase labels | TODO |
-| `downsample.py` | Nucleus and sequencing-depth downsampling | Pooled matrices | Downsampled matrices | TODO |
 | `saturation.py` | Gene- and isoform-level per-cell sequencing saturation | Count matrices | Saturation statistics and curves | TODO |
 | `feature_replicability.py` | Within- and between-platform feature replicability | Downsampled matrices | Feature overlaps and UpSet plots | TODO |
-| `clustering_quality.py` | Clustering of downsampled datasets and KNN-purity/ARI assessment | Downsampled matrices | KNN purity, ARI, and UMAP results | TODO |
-| `proliferation.py` | Recovery of proliferation signal after downsampling | Downsampled matrices and cell-cycle labels | Statistical tests and effect-size summaries | TODO |
-| `differential_expression.py` | Transcript-level differential expression between NIH-3T3 subclusters | Downsampled isoform matrices | Differential-expression results | TODO |
+
+Two of the analyses above — clustering/proliferation benchmarking and differential isoform expression between NIH-3T3 subclusters — rely on the downsampling scripts described in `downsampling/` below.
+
+### `downsampling/`
+
+`downsampling_cells.py` performs the cell-count downsampling step shared by two **independent** downsampling analyses, which differ in which cells are sampled and in what is evaluated downstream:
+
+- **A. Clustering and proliferation benchmarking** — assesses how sequencing depth affects gene/isoform detection, genome/species clustering quality, and recovery of the proliferation signal, using all cells (all species).
+- **B. Differential isoform expression** — assesses how sequencing depth affects the detection of differentially expressed isoforms between NIH-3T3 (mouse) subclusters, using a fixed pool of mouse-only cells.
+
+In both analyses, the input to the cell-downsampling step (step 1) is a QC-filtered, isoform-level cell matrix whose cells have already been assigned a cell-cycle phase (see `qc_filtering.py` and `cell_cycle.py` above).
+
+#### A. Clustering and proliferation benchmarking
+
+**1. Cell downsampling** with `downsampling_cells.py` (no cluster filter): downsamples the pooled, multi-species matrix to a fixed number of cells (3,000 cells), generating three replicates with different random seeds (seed = 0, 1, 2). These three replicate matrices become the "matrix replicates" used in step 2.
+
+```bash
+python3 downsampling_cells.py <input_file.h5ad> 3000 3
+```
+
+**2. Sequencing-depth downsampling and benchmarking** with `benchmarking_pipeline.py` and `run_benchmark.py`: raw UMI counts per cell (within each of the three 3,000-cell replicate matrices from step 1) are downsampled to five target sequencing depths — **3,000, 2,000, 1,000, 500, and 100 UMIs/cell** — with three downsampling seeds (seed = 0, 1, 2) per replicate and per platform, plus a full-depth (no downsampling) baseline. At each depth, the following are evaluated:
+
+- gene- and isoform-detection counts;
+- genome/species clustering quality (Leiden clustering, ARI vs. species assignment, silhouette score, and KNN purity, k=15); and
+- recovery of the proliferation signal in mouse cells (S/G2M vs. G1 cell-cycle phases, Mann-Whitney U test and rank-biserial effect size).
+
+| Script | Analysis | Main input | Main output | Status |
+| --- | --- | --- | --- | --- |
+| `downsampling_cells.py` | Downsampling to a fixed number of cells (3,000 cells), with three replicate seeds (seed = 0, 1, 2) | Pooled/annotated matrix (h5ad) | One downsampled matrix (h5ad) per seed | DONE |
+| `benchmarking_pipeline.py` | Library of downsampling, shared preprocessing (normalization, HVG selection, PCA, Harmony integration, UMAP), Leiden clustering, and evaluation functions (ARI, silhouette, KNN purity, gene/isoform detection, proliferation statistics) used by `run_benchmark.py` | Matrix with raw counts, species assignment, and cell-cycle phase labels | — (imported module, not run directly) | DONE |
+| `run_benchmark.py` | Entry point: runs the `benchmarking_pipeline.py` functions across platforms, matrix replicates, and the five target sequencing depths, then generates summary tables and manuscript figures | Per-platform, 3,000-cell replicate matrices (3 replicates each, from step 1) | Per-platform × depth summary tables (ARI, KNN purity, genes/isoforms detected, proliferation statistics) and figures (UMAP grids, barplots, violin plots) | DONE |
+
+#### B. Differential isoform expression (NIH-3T3 subclusters)
+
+**1. Mouse-only cell downsampling** with `downsampling_cells.py`, restricted to the mouse clusters via `--cluster-key`/`--clusters`: extracts a fixed pool of **3,000 mouse cells** from the NIH-3T3 clusters (instead of sampling across all species).
+
+```bash
+python3 downsampling_cells.py <input_file.h5ad> 3000 3 --cluster-key <cluster_column> --clusters <mouse_cluster_ids>
+```
+
+**2. Sequencing-depth downsampling** of this fixed 3,000-mouse-cell pool with `downsample_counts_3k.py`: unlike analysis A, this benchmark uses a single fixed sequencing depth — **3,000 UMIs/cell** — rather than a depth range, since the goal is to assess DE isoform detection at matched cell number and matched depth. The script scans its own directory for every `*.h5ad` matrix produced in step 1 and, for each one, downsamples raw UMI counts per cell to 3,000 UMIs/cell with three downsampling seeds (seed = 0, 1, 2). Already-generated outputs are skipped on rerun.
+
+**3. Differential isoform expression** between NIH-3T3 subclusters, run on the depth-downsampled mouse-only matrices from step 2.
+
+| Script | Analysis | Main input | Main output | Status |
+| --- | --- | --- | --- | --- |
+| `downsampling_cells.py` | Downsampling to a fixed pool of 3,000 mouse cells, restricted to NIH-3T3 clusters via `--cluster-key`/`--clusters` | Pooled/annotated matrix (h5ad) | Mouse-only, 3,000-cell matrix (h5ad) | DONE |
+| `downsample_counts_3k.py` | Sequencing-depth downsampling of the fixed mouse-cell pool to a single depth of 3,000 UMIs/cell (seeds 0/1/2) | All `*.h5ad` mouse-only matrices in the script's directory (output of step 1) | Depth-downsampled mouse-only matrices in `downsampled_counts/`, named `{original_stem}_{depth}_s{seed}.h5ad` | DONE |
+| `differential_expression.py` | Transcript-level differential expression between NIH-3T3 subclusters | Depth-downsampled, mouse-only isoform matrices (3,000 UMIs/cell) | Differential-expression results | TODO |
 
 The scripts should reproduce the analysis parameters and thresholds described in the manuscript, including:
 
