@@ -20,8 +20,6 @@ The code in this directory reproduces analyses performed for the benchmark manus
 benchmark/
 ├── README.md
 ├── long_read/
-├── short_read/
-│   └── argentag/
 ├── analysis/
 ├── short_long_comparison/
 └── config/
@@ -70,22 +68,9 @@ taggy_demux -T 4 -o <output_dir> --presets='illu+v1' \
   --mate-file=<sample>_R2.fastq <sample>_R1.fastq
 ```
 
-**2. Barcode conversion with `adapt_bc_sr_AT_v2.py`**: converts the ArgenTag virtual cell barcodes emitted by `taggy_demux` into 10x-compatible sequences and assembles Cell Ranger-ready FASTQs.
+**2. Barcode conversion**: the virtual cell barcodes emitted by `taggy_demux` are converted into 10x-compatible barcodes using a whitelist. In our case, the whitelist used was the 10x Genomics Single Cell 3' v3 barcode whitelist, `3M-february-2018.txt.gz`, hence the `--chemistry='SC3Pv3'` setting in step 3 below.
 
-| Script | Analysis | Main input | Main output | Status |
-| --- | --- | --- | --- | --- |
-| `adapt_bc_sr_AT_v2.py` | Conversion of ArgenTag cell barcodes to 10x-compatible nucleotide sequences, with synthetic index-read generation | Demultiplexed R1/R2 FASTQ (from step 1) and a 10x barcode whitelist (gzip-compressed, one barcode per line) | Cell Ranger-ready FASTQs (R1/R2/I1/I2), plus barcode counts and the observed → whitelist barcode mapping | DONE |
-
-Usage:
-
-```bash
-python3 adapt_bc_sr_AT_v2.py <input_dir> <output_dir> <sample_name> <whitelist_path>
-```
-
-- `input_dir`: directory containing `R1.fastq[.gz]` and `R2.fastq[.gz]` from `taggy_demux`
-- `output_dir`: destination root; the script writes `01_counts/bc_counts.txt`, `02_mapping/barcode_mapping.json`, and `03_cellranger_ready/<sample_name>_S1_L001_{R1,R2,I1,I2}_001.fastq`
-- `sample_name`: sample name used to construct the output FASTQ filenames
-- `whitelist_path`: gzip-compressed 10x barcode whitelist used to remap the observed ArgenTag barcodes (most frequent observed barcode → first whitelist barcode, and so on). `3M-february-2018.txt.gz` (the 10x Genomics Single Cell 3' v3 barcode whitelist, downloadable from the 10x Genomics website) was used — hence the `--chemistry='SC3Pv3'` setting in step 3 below.
+This step is performed with proprietary ArgenTag code that cannot be redistributed here. Researchers wishing to reproduce this step should contact ArgenTag directly.
 
 **3. Cell Ranger processing of the converted reads.** No custom script was used; Cell Ranger (v9.0.1, run via Singularity) was invoked directly on the `03_cellranger_ready` output from step 2, against the combined reference genome (see [Reference genomes](#reference-genomes)):
 
@@ -271,23 +256,35 @@ Random seeds used for the manuscript analyses should be explicitly recorded.
 
 ## `short_long_comparison/`
 
-Scripts used for direct comparison of matched short- and long-read sequencing data.
+`short_long_comparison.py` performs the direct comparison of matched short- and long-read sequencing data, in a single barcode-first pipeline:
+
+1. loads both count matrices;
+2. extracts and matches cell barcodes between modalities (handling both numeric and nucleotide barcode formats) and filters both datasets down to the shared barcodes;
+3. removes zero-count genes from each (filtered) modality;
+4. aggregates raw counts across all (matched) cells into one pseudobulk profile per modality;
+5. detects and sums any duplicate gene names in the raw pseudobulk counts (before normalization);
+6. normalizes to log2(CPM + 1);
+7. computes Pearson/Spearman correlations between modalities, both for shared genes and for the union of all expressed genes, with density-scatter plots; and
+8. visualizes and reports gene-detection overlap (Venn diagram) and a full summary report.
 
 | Script | Analysis | Main input | Main output | Status |
 | --- | --- | --- | --- | --- |
-| `match_barcodes.py` | Identification of nuclei represented in both sequencing modalities | Short- and long-read cell barcodes | Matched barcode lists/matrices | TODO |
-| `compare_gene_counts.py` | Gene-level short- versus long-read comparison | Matched gene-count matrices | Expression correlations, gene overlaps, and plots | TODO |
+| `short_long_comparison.py` | Barcode matching, pseudobulk aggregation, CPM normalization, shared-/all-gene correlation analysis, and gene-detection overlap between one short-read and one long-read matrix | One short-read and one long-read count matrix (`.h5ad`/`.h5`/`.csv`) | Correlation plots, Venn diagram, gene-overlap lists (TXT), and a summary report (CSV) | DONE |
 
-The analysis should reproduce the procedure described in the manuscript:
+Usage:
 
-- retain nuclei with matching barcodes between modalities;
-- perform ArgenTag barcode translation where required;
-- remove genes with zero total counts;
-- aggregate raw counts across matched nuclei;
-- normalize expression to CPM;
-- apply log2(CPM + 1) transformation;
-- calculate Pearson and Spearman correlations for shared genes and all detected genes; and
-- calculate and visualize gene-detection overlap.
+```bash
+python3 short_long_comparison.py \
+  --short 10X-3PRIME_gene_matrix.h5ad \
+  --long  10X-3PRIME_transcript_corrected_clustered_matrix.h5ad \
+  --output-dir results/short_long_comparison/10X-3PRIME \
+  --barcode-sep-short - \
+  --barcode-sep-long -
+```
+
+- `--short`/`--long`: paths to the short-read and long-read matrices for the same sample/platform.
+- `--barcode-sep-short`/`--barcode-sep-long`: separators used to split the cell barcode from any trailing suffix in `obs_names` (e.g. `-1`); `--barcode-sep-long` defaults to `--barcode-sep-short` if omitted.
+- `--output-dir`: directory for all plots and reports (default: `./short_long_output`).
 
 ## `config/`
 
@@ -296,21 +293,4 @@ Small configuration and metadata files required to reproduce the benchmark.
 | File | Contents | Status |
 | --- | --- | --- |
 | `samples.tsv` | Sample IDs, platforms, replicates, modalities, and ENA run accessions | TODO |
-| `cell_cycle_genes.tsv` | Ensembl IDs of S-phase and G2/M marker genes used for cell-cycle scoring | TODO |
 | `software_versions.tsv` | Software and package versions used for benchmark analyses | TODO |
-
-Large reference files, sequencing data, BAM files, count matrices, and other intermediate analysis files should not be committed to the repository.
-
-## Requirements for deposited scripts
-
-Before publication, each script should:
-
-1. contain a short description of its purpose;
-2. document required inputs and generated outputs;
-3. expose input/output paths rather than contain CRG-specific absolute paths;
-4. record important analysis parameters;
-5. document required software/package versions;
-6. use and document the random seed used for the manuscript where stochastic procedures are involved; and
-7. provide an example command where appropriate.
-
-The `Status` entries above should be changed from `TODO` to `DONE` as the corresponding scripts and commands are added. Proposed filenames can be changed to match the actual analysis code.
