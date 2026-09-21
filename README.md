@@ -221,6 +221,9 @@ The datasets used to develop and benchmark the pipeline are available from the E
 | Parse | Parse Rep2 | 379,870,956 | [ERR17793707](https://www.ebi.ac.uk/ena/browser/view/ERR17793707) |
 | Parse | Parse Rep3 | 412,205,016 | [ERR17793708](https://www.ebi.ac.uk/ena/browser/view/ERR17793708) |
 
+The fastq files from the short-read sequencing of the Argentag Rep1, which have been used in './benchmar', are available under ENA run accession [ERR17898945](https://www.ebi.ac.uk/ena/browser/view/ERR17898945).
+
+
 ### Analysis workflow
 
 The complete analysis was performed using four separate pipeline runs, one for each platform. In each run, the samplesheet contained all three replicates for that platform. Each pipeline execution required between 36 and 72 hours to complete, with runtime variation depending on resource availability and system load on the HPC cluster.
