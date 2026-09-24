@@ -89,14 +89,7 @@ If a manufacturer-provided script cannot be redistributed, its source and exact 
 
 ## `analysis/`
 
-Custom downstream analyses performed on processed gene- and isoform-cell matrices.
-
-| Script | Analysis | Main input | Main output | Status |
-| --- | --- | --- | --- | --- |
-| `saturation.py` | Gene- and isoform-level per-cell sequencing saturation | Count matrices | Saturation statistics and curves | TODO |
-| `feature_replicability.py` | Within- and between-platform feature replicability | Downsampled matrices | Feature overlaps and UpSet plots | TODO |
-
-Feature annotation, QC filtering, clustering/batch-correction, and cell-cycle scoring are implemented in `matrix_analysis/` below, and the two downsampling analyses (clustering/proliferation benchmarking and differential isoform expression between NIH-3T3 subclusters) rely on the scripts described in `downsampling/`.
+Custom downstream analyses performed on processed gene- and isoform-cell matrices. Feature annotation, QC filtering, clustering/batch-correction, and cell-cycle scoring are implemented in `matrix_analysis/` below, and the two downsampling analyses (clustering/proliferation benchmarking and differential isoform expression between NIH-3T3 subclusters) rely on the scripts described in `downsampling/`.
 
 ### `matrix_analysis/`
 
@@ -228,13 +221,13 @@ python3 downsampling_cells.py <input_file.h5ad> 3000 3 --cluster-key <cluster_co
 
 **2. Sequencing-depth downsampling** of this fixed 3,000-mouse-cell pool with `downsample_counts_3k.py`: unlike analysis A, this benchmark uses a single fixed sequencing depth — **3,000 UMIs/cell** — rather than a depth range, since the goal is to assess DE isoform detection at matched cell number and matched depth. The script scans its own directory for every `*.h5ad` matrix produced in step 1 and, for each one, downsamples raw UMI counts per cell to 3,000 UMIs/cell with three downsampling seeds (seed = 0, 1, 2). Already-generated outputs are skipped on rerun.
 
-**3. Differential isoform expression** between NIH-3T3 subclusters, run on the depth-downsampled mouse-only matrices from step 2.
+**3. Differential isoform expression** between NIH-3T3 subclusters, run on the depth-downsampled mouse-only matrices from step 2. No dedicated script is used for this step: it is performed with the `diffexp` subcommand of `Scanpy_analysis.py` (see [`matrix_analysis/`](#matrix_analysis)), i.e. the same pseudobulk EdgeR differential-expression step used for the per-platform analysis.
 
 | Script | Analysis | Main input | Main output | Status |
 | --- | --- | --- | --- | --- |
 | `downsampling_cells.py` | Downsampling to a fixed pool of 3,000 mouse cells, restricted to NIH-3T3 clusters via `--cluster-key`/`--clusters` | Pooled/annotated matrix (h5ad) | Mouse-only, 3,000-cell matrix (h5ad) | DONE |
 | `downsample_counts_3k.py` | Sequencing-depth downsampling of the fixed mouse-cell pool to a single depth of 3,000 UMIs/cell (seeds 0/1/2) | All `*.h5ad` mouse-only matrices in the script's directory (output of step 1) | Depth-downsampled mouse-only matrices in `downsampled_counts/`, named `{original_stem}_{depth}_s{seed}.h5ad` | DONE |
-| `differential_expression.py` | Transcript-level differential expression between NIH-3T3 subclusters | Depth-downsampled, mouse-only isoform matrices (3,000 UMIs/cell) | Differential-expression results | TODO |
+| `Scanpy_analysis.py diffexp` (in `matrix_analysis/`) | Pseudobulk differential expression (EdgeR via `pertpy`) between NIH-3T3 subclusters | Depth-downsampled, mouse-only matrices (3,000 UMIs/cell, output of step 2) | DE result tables (TSV, filtered and unfiltered) and volcano plots | DONE |
 
 The scripts should reproduce the analysis parameters and thresholds described in the manuscript, including:
 
@@ -301,5 +294,4 @@ Small configuration and metadata files required to reproduce the benchmark.
 
 | File | Contents | Status |
 | --- | --- | --- |
-| `samples.tsv` | Sample IDs, platforms, replicates, modalities, and ENA run accessions | TODO |
-| `software_versions.tsv` | Software and package versions used for benchmark analyses | TODO |
+| `samples.tsv` | One row per sequencing run: platform, sample (with replicate), modality, and ENA run accession | DONE |
