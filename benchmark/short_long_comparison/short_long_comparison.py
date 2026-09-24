@@ -12,6 +12,7 @@ using different modalities, including:
 """
 
 import argparse
+import re
 import scanpy as sc
 import pandas as pd
 import numpy as np
@@ -102,33 +103,42 @@ def extract_barcodes(obs_names, barcode_sep='-'):
     barcodes : dict
         Dictionary mapping barcode -> list of original indices with this barcode
     """
+    # Barcode patterns anchored at the start of obs_names:
+    #   10X      (nucleotide): AAACCAAAGGGCTTAC-1-10X-3PRIME_REP1 / AAACCCGCAAACCGCA-10X-3PRIME_REP1
+    #   Argentag (numeric '-'): 0140-0117-0307-1 / 0076-0000-0481-ARGENTAG_REP1
+    #   Parse    (numeric '_'): 05_01_91__s1 / 01_02_13-PARSE_REP1
+    patterns = {
+        '10X': re.compile(r'^([ACGTN]{6,})(?![A-Za-z])'),
+        'numeric': re.compile(r'^(\d+[-_]\d+[-_]\d+)(?!\d)'),
+    }
+
     barcodes = {}
+    n_matched = {key: 0 for key in patterns}
+    n_fallback = 0
     for idx, name in enumerate(obs_names):
-        parts = str(name).split(barcode_sep)
-        
-        # Try to extract the numeric barcode (first 3 numeric parts)
-        numeric_parts = []
-        for part in parts:
-            if part.isdigit():
-                numeric_parts.append(part)
-            else:
+        name = str(name)
+        for key, pattern in patterns.items():
+            match = pattern.match(name)
+            if match:
+                barcode = match.group(1)
+                if key == 'numeric':
+                    # Canonicalise separators so '-' and '_' variants still match
+                    barcode = re.sub(r'[-_]', '_', barcode)
+                n_matched[key] += 1
                 break
-        # If we have at least 3 numeric parts, use them as the barcode
-        if len(numeric_parts) >= 3:
-            barcode = barcode_sep.join(numeric_parts[:3])
-
         else:
-            # For nucleotide barcodes or other formats, use all except the last part
-            # (which is typically a suffix like "-1" or "-SAMPLE_NAME")
-            if len(parts) > 1:
-                barcode = barcode_sep.join(parts[:-1])
-                #barcode = parts[0]
-            else:
-                barcode = parts[0]
+            # Unknown format: fall back to the first field before the separator
+            barcode = name.split(barcode_sep)[0]
+            n_fallback += 1
 
-        if barcode not in barcodes:
-            barcodes[barcode] = []
-        barcodes[barcode].append(idx)
+        barcodes.setdefault(barcode, []).append(idx)
+
+    print(f"  Barcode formats detected: 10X={n_matched['10X']}, "
+          f"numeric (Argentag/Parse)={n_matched['numeric']}, fallback={n_fallback}")
+    n_dup = sum(1 for idx_list in barcodes.values() if len(idx_list) > 1)
+    if n_dup:
+        print(f"  WARNING: {n_dup} barcodes map to more than one obs_name "
+              f"(e.g. same barcode in different sublibraries/replicates)")
 
     return barcodes
 

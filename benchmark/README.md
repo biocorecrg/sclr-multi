@@ -271,15 +271,24 @@ Random seeds used for the manuscript analyses should be explicitly recorded.
 | --- | --- | --- | --- | --- |
 | `short_long_comparison.py` | Barcode matching, pseudobulk aggregation, CPM normalization, shared-/all-gene correlation analysis, and gene-detection overlap between one short-read and one long-read matrix | One short-read and one long-read count matrix (`.h5ad`/`.h5`/`.csv`) | Correlation plots, Venn diagram, gene-overlap lists (TXT), and a summary report (CSV) | DONE |
 
-Usage:
+Example usage reproducing the manuscript comparisons, run once per platform:
 
 ```bash
+# 10x Genomics 3' (default barcode separator '-' for both modalities)
 python3 short_long_comparison.py \
-  --short 10X-3PRIME_gene_matrix.h5ad \
-  --long  10X-3PRIME_transcript_corrected_clustered_matrix.h5ad \
-  --output-dir results/short_long_comparison/10X-3PRIME \
-  --barcode-sep-short - \
-  --barcode-sep-long -
+  --long LONG_READS/10X-3PRIME/gene/matrixes/10X-3PRIME_gene_filtered_annotated_matrix.h5ad \
+  --short SHORT_READS/10X-3PRIME/gene/matrixes/10X-3PRIME_gene_filtered_annotated_matrix.h5ad
+
+# ArgenTag (default barcode separator '-' for both modalities)
+python3 short_long_comparison.py \
+  --long LONG_READS/ARGENTAG/gene/matrixes/ARGENTAG_gene_filtered_annotated_matrix.h5ad \
+  --short SHORT_READS/ARGENTAG/gene/matrixes/ARGENTAG_gene_filtered_annotated_matrix.h5ad
+
+# Parse Biosciences (short-read barcodes separated by '__', long-read barcodes by '-')
+python3 short_long_comparison.py \
+  --long LONG_READS/PARSE/gene/matrixes/PARSE_gene_filtered_annotated_matrix.h5ad \
+  --short SHORT_READS/PARSE/gene/matrixes/PARSE_gene_filtered_annotated_matrix.h5ad \
+  --barcode-sep-short '__' --barcode-sep-long '-'
 ```
 
 - `--short`/`--long`: paths to the short-read and long-read matrices for the same sample/platform.
