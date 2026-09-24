@@ -1,0 +1,17 @@
+Platform	Sample	Modality	ENA run accession
+10X-3prime	10X-3prime Rep1	Long reads	ERR17793697
+10X-3prime	10X-3prime Rep2	Long reads	ERR17793698
+10X-3prime	10X-3prime Rep3	Long reads	ERR17793699
+10X-5prime	10X-5prime Rep1	Long reads	ERR17793700
+10X-5prime	10X-5prime Rep2	Long reads	ERR17793701
+10X-5prime	10X-5prime Rep3	Long reads	ERR17793702
+Argentag	Argentag Rep1	Long reads	ERR17793703
+Argentag	Argentag Rep2	Long reads	ERR17793704
+Argentag	Argentag Rep3	Long reads	ERR17793705
+Parse	Parse Rep1	Long reads	ERR17793706
+Parse	Parse Rep2	Long reads	ERR17793707
+Parse	Parse Rep3	Long reads	ERR17793708
+10X-3prime	10X-3prime Rep1	Short reads	TBD
+10X-5prime	10X-5prime Rep1	Short reads	TBD
+Argentag	Argentag Rep1	Short reads	ERR17898945
+Parse	Parse Rep1	Short reads	TBD
