@@ -11,7 +11,8 @@ Argentag	Argentag Rep3	Long reads	ERR17793705
 Parse	Parse Rep1	Long reads	ERR17793706
 Parse	Parse Rep2	Long reads	ERR17793707
 Parse	Parse Rep3	Long reads	ERR17793708
-10X-3prime	10X-3prime Rep1	Short reads	TBD
-10X-5prime	10X-5prime Rep1	Short reads	TBD
+10X-3prime	10X-3prime Rep1	Short reads	ERR17982096
+10X-5prime	10X-5prime Rep1	Short reads	ERR17982097
 Argentag	Argentag Rep1	Short reads	ERR17898945
-Parse	Parse Rep1	Short reads	TBD
+Parse	Parse Rep1	Short reads	ERR17982098
+Parse	Parse Rep2	Short reads	ERR17982099

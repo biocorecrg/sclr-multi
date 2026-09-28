@@ -221,8 +221,17 @@ The datasets used to develop and benchmark the pipeline are available from the E
 | Parse | Parse Rep2 | 379,870,956 | [ERR17793707](https://www.ebi.ac.uk/ena/browser/view/ERR17793707) |
 | Parse | Parse Rep3 | 412,205,016 | [ERR17793708](https://www.ebi.ac.uk/ena/browser/view/ERR17793708) |
 
-The fastq files from the short-read sequencing of the Argentag Rep1, which have been used in `benchmark/` , are available under ENA run accession [ERR17898945](https://www.ebi.ac.uk/ena/browser/view/ERR17898945).
+### Short-read datasets
 
+Matched short-read (Illumina) datasets from the same libraries are available for benchmarking and comparative analyses:
+
+| Platform | Sample | ENA run accession |
+| --- | --- | --- |
+| 10X-3prime | 10X-3prime Rep1 | [ERR17982096](https://www.ebi.ac.uk/ena/browser/view/ERR17982096) |
+| 10X-5prime | 10X-5prime Rep1 | [ERR17982097](https://www.ebi.ac.uk/ena/browser/view/ERR17982097) |
+| Argentag | Argentag Rep1 | [ERR17898945](https://www.ebi.ac.uk/ena/browser/view/ERR17898945) |
+| Parse | Parse Rep1 | [ERR17982098](https://www.ebi.ac.uk/ena/browser/view/ERR17982098) |
+| Parse | Parse Rep2 | [ERR17982099](https://www.ebi.ac.uk/ena/browser/view/ERR17982099) |
 
 ### Analysis workflow
 
